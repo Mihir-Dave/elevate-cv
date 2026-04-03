@@ -71,20 +71,22 @@ const ResultsPage = () => {
       </button>
 
       <div className="results-header">
-        <h1 className="results-title">AI Analysis <span className="gradient-text">Complete</span></h1>
-        <p className="results-subtitle">Here is the detailed breakdown of your resume against industry standards.</p>
+        <h1 className="results-title">Analysis <span className="gradient-text">Complete</span></h1>
+        <p className="results-subtitle">Review your personalized ATS intelligence report below.</p>
       </div>
 
-      <div className="results-grid">
+      <div className="results-summary-section">
         <GlassCard className="score-card shadow-glow">
-          <div className="score-content">
-            <Award size={48} className="score-icon gradient-text" />
-            <h3 className="score-label">Overall Concept Validation</h3>
-            <p className="text-muted">Review the analysis report below</p>
+          <Award size={40} className="score-icon gradient-text" />
+          <div className="score-text-content">
+            <h3 className="score-label">Executive Validation</h3>
+            <p className="text-muted">The report below provides a comprehensive breakdown of your resume against current industry hiring standards.</p>
           </div>
         </GlassCard>
+      </div>
 
-        <GlassCard className="analysis-feed span-2">
+      <div className="results-grid single-column">
+        <GlassCard className="analysis-feed">
           <div className="feed-header">
             <Zap className="feed-icon" />
             <h2>Intelligence Report</h2>
