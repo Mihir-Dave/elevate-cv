@@ -10,8 +10,8 @@ import Navbar from './components/ui/Navbar';
 
 // Private Route wrapper
 const ProtectedRoute = ({ children }) => {
-  const { user } = useContext(AuthContext);
-  if (!user) return <Navigate to="/" />;
+  const { token } = useContext(AuthContext);
+  if (!token) return <Navigate to="/" />;
   return children;
 };
 

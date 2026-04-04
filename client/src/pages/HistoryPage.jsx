@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
 import GlassCard from "../components/ui/GlassCard";
 import "./HistoryPage.css";
 
 const HistoryPage = () => {
+  const { token } = useContext(AuthContext);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
+      if (!token) {
+        setError("Please login to view your history");
+        setLoading(false);
+        return;
+      }
+
       try {
         const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
         const res = await axios.get(`${API_URL}/analysis/history`, {
@@ -24,7 +32,7 @@ const HistoryPage = () => {
     };
 
     fetchHistory();
-  }, []);
+  }, [token]);
 
   if (loading) return <div className="history-loading">Loading History...</div>;
   if (error) return <div className="history-error">{error}</div>;

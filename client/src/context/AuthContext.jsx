@@ -6,7 +6,7 @@ export const AuthContext = createContext();
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,12 +16,13 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('token', token);
-      
-      // We assume user info is in token or saved, but normally we would hit /api/auth/me. 
-      // For this project, user info is returned on login/register.
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
     } else {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       setUser(null);
     }
   }, [token]);

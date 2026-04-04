@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, Award, ThumbsUp, AlertTriangle, Zap, Target } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import GlassCard from '../components/ui/GlassCard';
-import ReactMarkdown from 'react-markdown';
 import './ResultsPage.css';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
@@ -13,44 +12,39 @@ const ResultsPage = () => {
   const { resumeId } = useParams();
   const navigate = useNavigate();
   const { token } = useContext(AuthContext);
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
-  const hasFetched = useRef(false);
 
   useEffect(() => {
+    
+    if (!resumeId || !token) return;
+
     const analyzeResume = async () => {
-      if (hasFetched.current) return;
-      hasFetched.current = true;
-      
       try {
-        const res = await axios.post(`${API_URL}/analysis/analyze/${resumeId}`, {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        // The AI result comes back as a markdown/string from Gemini
+        const res = await axios.post(
+          `${API_URL}/analysis/analyze/${resumeId}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         setResult(res.data.analysis);
-        setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || 'Error analyzing resume. Please try again.');
+      } finally {
         setLoading(false);
       }
     };
 
-    if (resumeId && token) {
-      analyzeResume();
-    }
+    analyzeResume();
   }, [resumeId, token]);
 
   if (loading) {
     return (
       <div className="loading-container">
         <div className="hexagon-loader"></div>
-        <h2 className="animate-pulse">Deepmind AI is analyzing your resume...</h2>
-        <p className="text-secondary">Please wait, this usually takes 10-15 seconds.</p>
+        <h2 className="animate-pulse">AI is analyzing your resume...</h2>
+        <p className="text-secondary">Please wait, this usually takes 10–15 seconds.</p>
       </div>
     );
   }
@@ -75,15 +69,17 @@ const ResultsPage = () => {
       </button>
 
       <div className="results-header">
-        <h1 className="results-title">Analysis <span className="gradient-text">Complete</span></h1>
+        <h1 className="results-title">
+          Analysis <span className="gradient-text">Complete</span>
+        </h1>
         <p className="results-subtitle">Review your personalized ATS intelligence report below.</p>
       </div>
 
       <div className="results-summary-section">
         <GlassCard className="score-card shadow-glow">
           <div className="score-display">
-            <div 
-              className="score-circle" 
+            <div
+              className="score-circle"
               style={{ '--score-percent': `${result.score || 0}%` }}
             >
               <div className="score-value-container">
@@ -108,9 +104,7 @@ const ResultsPage = () => {
               <h2>Strategic Strengths</h2>
             </div>
             <ul className="analysis-list">
-              {result.strengths?.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
+              {result.strengths?.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           </GlassCard>
 
@@ -120,9 +114,7 @@ const ResultsPage = () => {
               <h2>Gap Analysis</h2>
             </div>
             <ul className="analysis-list">
-              {result.weaknesses?.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
+              {result.weaknesses?.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           </GlassCard>
         </div>
@@ -134,9 +126,7 @@ const ResultsPage = () => {
               <h2>Critical Roadmap</h2>
             </div>
             <ul className="analysis-list">
-              {result.improvements?.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
+              {result.improvements?.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
           </GlassCard>
 
@@ -157,6 +147,4 @@ const ResultsPage = () => {
   );
 };
 
-
-
-export default ResultsPage;
+export default ResultsPage;s

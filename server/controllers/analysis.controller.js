@@ -4,15 +4,45 @@ import { analyzeResume } from "../services/ai.service.js";
 import axios from "axios";
 import Analysis from "../models/Analysis.model.js";
 
-//Analyze Resume
+// Analyze Resume
 export const analyzeResumeController = async (req, res) => {
   try {
     const { resumeId } = req.params;
 
-    //Find resume
+    // Find resume
     const resume = await Resume.findById(resumeId);
     if (!resume) {
       return res.status(404).json({ message: "Resume not found" });
+    }
+
+    // Check if this exact resume was already analyzed.
+    // If yes, return the saved result immediately — NO Groq API call made.
+    // This prevents double calls from React Strict Mode remounting.
+    const existingAnalysis = await Analysis.findOne({
+      userId: req.user._id,
+      resumeId: resume._id,
+    });
+
+    if (existingAnalysis) {
+      let parsed = {};
+      try {
+        parsed = JSON.parse(existingAnalysis.analysisText);
+      } catch {
+        parsed = {};
+      }
+
+      return res.status(200).json({
+        message: "Analysis already exists, returning cached result",
+        analysis: {
+          score: existingAnalysis.score,
+          strengths: parsed.strengths || [],
+          weaknesses: parsed.weaknesses || [],
+          improvements: parsed.improvements || [],
+          skills: existingAnalysis.skills || [],
+          feedbackSummary: parsed.feedbackSummary || existingAnalysis.feedback,
+        },
+        version: existingAnalysis.version,
+      });
     }
 
     // Fetch PDF from Cloudinary
@@ -27,10 +57,9 @@ export const analyzeResumeController = async (req, res) => {
       return res.status(400).json({ message: "Could not extract text" });
     }
 
-    // Send to AI (Groq)
+    // Send to AI (Groq) — only called ONCE per resume
     const aiResult = await analyzeResume(text);
 
-    // IMPORTANT: aiResult is already parsed JSON (from service)
     const {
       score = 0,
       strengths = [],
@@ -40,14 +69,14 @@ export const analyzeResumeController = async (req, res) => {
       feedbackSummary = "Analysis completed",
     } = aiResult;
 
-    //  Versioning (SAFE approach)
+    // Versioning
     const lastAnalysis = await Analysis.findOne({
       userId: req.user._id,
     }).sort({ version: -1 });
 
     const version = lastAnalysis ? lastAnalysis.version + 1 : 1;
 
-    //  Save to DB
+    // Save to DB
     const newAnalysis = await Analysis.create({
       userId: req.user._id,
       resumeId: resume._id,
@@ -63,7 +92,7 @@ export const analyzeResumeController = async (req, res) => {
       }),
     });
 
-    //  Send response
+    // Send response
     res.status(200).json({
       message: "Analysis completed and saved",
       analysis: {
@@ -78,7 +107,6 @@ export const analyzeResumeController = async (req, res) => {
     });
   } catch (error) {
     console.error("Analysis Error:", error.message);
-
     res.status(500).json({
       message: "Error analyzing resume",
       error: error.message,
