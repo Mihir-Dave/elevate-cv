@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { LogOut, User } from 'lucide-react';
 import './Navbar.css';
@@ -23,6 +23,12 @@ const Navbar = () => {
         </div>
         
         <div className="navbar-user">
+          <Link to="/dashboard" className="nav-link">
+            Dashboard
+          </Link>
+          <Link to="/history" className="nav-link">
+            History
+          </Link>
           <div className="user-info">
             <User size={18} />
             <span>{user.name}</span>

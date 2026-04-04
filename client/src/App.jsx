@@ -5,6 +5,7 @@ import { AuthContext } from './context/AuthContext';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import ResultsPage from './pages/ResultsPage';
+import HistoryPage from './pages/HistoryPage';
 import Navbar from './components/ui/Navbar';
 
 // Private Route wrapper
@@ -33,6 +34,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ResultsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/history" 
+          element={
+            <ProtectedRoute>
+              <HistoryPage />
             </ProtectedRoute>
           } 
         />

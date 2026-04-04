@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, Award, ThumbsUp, AlertTriangle, Zap, Target } from 'lucide-react';
@@ -17,9 +17,13 @@ const ResultsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
     const analyzeResume = async () => {
+      if (hasFetched.current) return;
+      hasFetched.current = true;
+      
       try {
         const res = await axios.post(`${API_URL}/analysis/analyze/${resumeId}`, {}, {
           headers: {
@@ -77,27 +81,82 @@ const ResultsPage = () => {
 
       <div className="results-summary-section">
         <GlassCard className="score-card shadow-glow">
-          <Award size={40} className="score-icon gradient-text" />
-          <div className="score-text-content">
-            <h3 className="score-label">Executive Validation</h3>
-            <p className="text-muted">The report below provides a comprehensive breakdown of your resume against current industry hiring standards.</p>
+          <div className="score-display">
+            <div 
+              className="score-circle" 
+              style={{ '--score-percent': `${result.score || 0}%` }}
+            >
+              <div className="score-value-container">
+                <span className="score-value">{result.score || 0}</span>
+                <span className="score-label">ATS Rank</span>
+              </div>
+            </div>
+            <div className="score-info">
+              <Award size={32} className="text-primary mb-2" />
+              <h3>Intelligence Analysis</h3>
+              <p>{result.feedbackSummary}</p>
+            </div>
           </div>
         </GlassCard>
       </div>
 
-      <div className="results-grid single-column">
-        <GlassCard className="analysis-feed">
-          <div className="feed-header">
-            <Zap className="feed-icon" />
-            <h2>Intelligence Report</h2>
-          </div>
-          <div className="markdown-content">
-            <ReactMarkdown>{result}</ReactMarkdown>
-          </div>
-        </GlassCard>
+      <div className="results-grid">
+        <div className="results-column">
+          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div className="card-header">
+              <ThumbsUp size={22} className="text-success" />
+              <h2>Strategic Strengths</h2>
+            </div>
+            <ul className="analysis-list">
+              {result.strengths?.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </GlassCard>
+
+          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="card-header">
+              <AlertTriangle size={22} className="text-warning" />
+              <h2>Gap Analysis</h2>
+            </div>
+            <ul className="analysis-list">
+              {result.weaknesses?.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </GlassCard>
+        </div>
+
+        <div className="results-column">
+          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.3s' }}>
+            <div className="card-header">
+              <Zap size={22} className="text-primary" />
+              <h2>Critical Roadmap</h2>
+            </div>
+            <ul className="analysis-list">
+              {result.improvements?.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </GlassCard>
+
+          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <div className="card-header">
+              <Target size={22} className="text-info" />
+              <h2>Validated Skills</h2>
+            </div>
+            <div className="skills-tags">
+              {result.skills?.map((skill, i) => (
+                <span key={i} className="skill-tag">{skill}</span>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
       </div>
     </div>
   );
 };
+
+
 
 export default ResultsPage;
