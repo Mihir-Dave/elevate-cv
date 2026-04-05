@@ -147,4 +147,4 @@ const ResultsPage = () => {
   );
 };
 
-export default ResultsPage;s
+export default ResultsPage;
