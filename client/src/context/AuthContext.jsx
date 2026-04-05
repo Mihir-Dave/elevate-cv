@@ -6,7 +6,17 @@ export const AuthContext = createContext();
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const getInitialUser = () => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error("Error parsing user from localStorage:", e);
+      return null;
+    }
+  };
+
+  const [user, setUser] = useState(getInitialUser());
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
