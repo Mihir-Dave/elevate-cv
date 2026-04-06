@@ -3,8 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, Award, ThumbsUp, AlertTriangle, Zap, Target } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
-import GlassCard from '../components/ui/GlassCard';
-import './ResultsPage.css';
+import Card from '../components/ui/Card';
+import Section from '../components/ui/Section';
+import Badge from '../components/ui/Badge';
+import ScoreHighlight from '../components/ui/ScoreHighlight';
+import Button from '../components/ui/Button';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -18,7 +21,6 @@ const ResultsPage = () => {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    
     if (!resumeId || !token) return;
 
     const analyzeResume = async () => {
@@ -41,107 +43,157 @@ const ResultsPage = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="hexagon-loader"></div>
-        <h2 className="animate-pulse">AI is analyzing your resume...</h2>
-        <p className="text-secondary">Please wait, this usually takes 10–15 seconds.</p>
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-8 space-y-6">
+        <div className="w-16 h-16 border-4 border-slate-800 border-t-blue-500 rounded-full animate-spin"></div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-outfit font-bold text-white animate-pulse">AI is analyzing your resume...</h2>
+          <p className="text-slate-400 text-lg">Please wait, this securely reviews your layout and impact.</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="error-container">
-        <AlertTriangle size={64} className="text-danger mb-4" />
-        <h2>Analysis Failed</h2>
-        <p>{error}</p>
-        <button className="btn btn-outline mt-4" onClick={() => navigate('/dashboard')}>
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-8 space-y-6">
+        <div className="bg-red-500/10 p-6 rounded-full border border-red-500/20">
+          <AlertTriangle size={64} className="text-red-500" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-3xl font-outfit font-bold text-white">Analysis Failed</h2>
+          <p className="text-slate-400 text-lg max-w-md">{error}</p>
+        </div>
+        <Button variant="outline" onClick={() => navigate('/dashboard')} className="mt-4">
           Go Back
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="results-container animate-slide-up">
-      <button className="back-btn" onClick={() => navigate('/dashboard')}>
-        <ChevronLeft size={20} /> Dashboard
-      </button>
+    <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-12">
+      {/* Navigation & Header */}
+      <div className="space-y-6">
+        <button 
+          className="group flex items-center space-x-2 text-sm font-medium text-slate-400 hover:text-white transition-colors bg-slate-800/50 hover:bg-slate-800 px-4 py-2 rounded-full border border-white/5"
+          onClick={() => navigate('/dashboard')}
+        >
+          <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Dashboard</span>
+        </button>
 
-      <div className="results-header">
-        <h1 className="results-title">
-          Analysis <span className="gradient-text">Complete</span>
-        </h1>
-        <p className="results-subtitle">Review your personalized ATS intelligence report below.</p>
+        <div className="flex flex-col space-y-2">
+          <h1 className="text-4xl md:text-5xl font-outfit font-bold tracking-tight text-white">
+            Analysis <span className="text-gradient">Complete</span>
+          </h1>
+          <p className="text-lg text-slate-400 max-w-2xl">
+            Review your personalized ATS intelligence report. We've highlighted areas of high impact and opportunities for growth.
+          </p>
+        </div>
       </div>
 
-      <div className="results-summary-section">
-        <GlassCard className="score-card shadow-glow">
-          <div className="score-display">
-            <div
-              className="score-circle"
-              style={{ '--score-percent': `${result.score || 0}%` }}
-            >
-              <div className="score-value-container">
-                <span className="score-value">{result.score || 0}</span>
-                <span className="score-label">ATS Rank</span>
-              </div>
+      {/* Top Section: Score & Summary */}
+      <Section>
+        <Card className="!p-8 md:!p-12 relative overflow-hidden bg-gradient-to-br from-slate-800/80 to-slate-900/80">
+          <div className="flex flex-col md:flex-row items-center gap-12 relative z-10">
+            <div className="flex-shrink-0">
+              <ScoreHighlight score={result.score || 0} />
             </div>
-            <div className="score-info">
-              <Award size={32} className="text-primary mb-2" />
-              <h3>Intelligence Analysis</h3>
-              <p>{result.feedbackSummary}</p>
+            
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-blue-500/10 p-2 rounded-lg">
+                  <Award size={24} className="text-blue-400" />
+                </div>
+                <h3 className="text-2xl font-outfit font-bold text-white">Intelligence Analysis</h3>
+              </div>
+              <p className="text-slate-300 text-lg leading-relaxed">
+                {result.feedbackSummary}
+              </p>
             </div>
           </div>
-        </GlassCard>
+        </Card>
+      </Section>
+
+      {/* Grid Sections: Strengths & Weaknesses */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Section title="Strategic Strengths" className="h-full">
+          <Card hover className="h-full border-t-4 border-t-emerald-500/50 flex flex-col pt-8">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-emerald-500/10 p-2 rounded-lg">
+                <ThumbsUp size={20} className="text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">What You Did Well</h3>
+            </div>
+            <ul className="space-y-4 flex-1">
+              {result.strengths?.map((item, i) => (
+                <li key={i} className="flex items-start space-x-3 text-slate-300">
+                  <span className="text-emerald-500 font-bold mt-0.5">•</span>
+                  <span className="leading-relaxed">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Section>
+
+        <Section title="Gap Analysis" className="h-full">
+          <Card hover className="h-full border-t-4 border-t-amber-500/50 flex flex-col pt-8">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-amber-500/10 p-2 rounded-lg">
+                <AlertTriangle size={20} className="text-amber-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Areas for Improvement</h3>
+            </div>
+            <ul className="space-y-4 flex-1">
+              {result.weaknesses?.map((item, i) => (
+                <li key={i} className="flex items-start space-x-3 text-slate-300">
+                  <span className="text-amber-500 font-bold mt-0.5">•</span>
+                  <span className="leading-relaxed">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Section>
       </div>
 
-      <div className="results-grid">
-        <div className="results-column">
-          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            <div className="card-header">
-              <ThumbsUp size={22} className="text-success" />
-              <h2>Strategic Strengths</h2>
+      {/* Grid Sections: Roadmap & Skills */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Section title="Critical Roadmap" className="h-full">
+          <Card hover className="h-full border-t-4 border-t-blue-500/50 flex flex-col pt-8">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-blue-500/10 p-2 rounded-lg">
+                <Zap size={20} className="text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Actionable Steps</h3>
             </div>
-            <ul className="analysis-list">
-              {result.strengths?.map((item, i) => <li key={i}>{item}</li>)}
+            <ul className="space-y-4 flex-1">
+              {result.improvements?.map((item, i) => (
+                <li key={i} className="flex items-start space-x-3 text-slate-300">
+                  <span className="text-blue-500 font-bold mt-0.5">•</span>
+                  <span className="leading-relaxed">{item}</span>
+                </li>
+              ))}
             </ul>
-          </GlassCard>
+          </Card>
+        </Section>
 
-          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="card-header">
-              <AlertTriangle size={22} className="text-warning" />
-              <h2>Gap Analysis</h2>
+        <Section title="Validated Skills" className="h-full">
+          <Card hover className="h-full border-t-4 border-t-purple-500/50 flex flex-col pt-8">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-purple-500/10 p-2 rounded-lg">
+                <Target size={20} className="text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Core Competencies</h3>
             </div>
-            <ul className="analysis-list">
-              {result.weaknesses?.map((item, i) => <li key={i}>{item}</li>)}
-            </ul>
-          </GlassCard>
-        </div>
-
-        <div className="results-column">
-          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.3s' }}>
-            <div className="card-header">
-              <Zap size={22} className="text-primary" />
-              <h2>Critical Roadmap</h2>
-            </div>
-            <ul className="analysis-list">
-              {result.improvements?.map((item, i) => <li key={i}>{item}</li>)}
-            </ul>
-          </GlassCard>
-
-          <GlassCard className="analysis-card animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <div className="card-header">
-              <Target size={22} className="text-info" />
-              <h2>Validated Skills</h2>
-            </div>
-            <div className="skills-tags">
+            <div className="flex flex-wrap gap-2">
               {result.skills?.map((skill, i) => (
-                <span key={i} className="skill-tag">{skill}</span>
+                <Badge key={i} variant="default" className="text-sm px-4 py-1.5 hover:bg-slate-700 hover:border-slate-500 transition-colors cursor-default">
+                  {skill}
+                </Badge>
               ))}
             </div>
-          </GlassCard>
-        </div>
+          </Card>
+        </Section>
       </div>
     </div>
   );

@@ -1,20 +1,34 @@
 import React from 'react';
-import './Input.css';
 
-const Input = ({ label, icon: Icon, error, className = '', ...props }) => {
+const Input = React.forwardRef(({ label, icon: Icon, error, className = '', ...props }, ref) => {
   return (
-    <div className={`input-wrapper ${className}`}>
-      {label && <label className="input-label">{label}</label>}
-      <div className="input-container">
-        {Icon && <Icon className="input-icon" size={20} />}
-        <input 
-          className={`input-field ${Icon ? 'has-icon' : ''} ${error ? 'has-error' : ''}`}
-          {...props} 
+    <div className="flex flex-col space-y-2 w-full">
+      {label && (
+        <label className="text-sm font-medium text-slate-300">
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Icon className="h-5 w-5 text-slate-500" />
+          </div>
+        )}
+        <input
+          ref={ref}
+          className={`w-full bg-slate-900/50 border ${error ? 'border-red-500 focus:ring-red-500/20' : 'border-slate-700 focus:border-blue-500 focus:ring-blue-500/20'} text-slate-100 rounded-xl ${Icon ? 'pl-11' : 'px-4'} py-3 outline-none transition-all duration-300 focus:ring-4 placeholder-slate-500 shadow-inner ${className}`}
+          {...props}
         />
       </div>
-      {error && <span className="input-error">{error}</span>}
+      {error && (
+        <span className="text-xs font-semibold text-red-400">
+          {error}
+        </span>
+      )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
 
 export default Input;

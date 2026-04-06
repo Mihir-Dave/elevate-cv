@@ -2,10 +2,9 @@ import React, { useState, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, FileText, CheckCircle, XCircle } from 'lucide-react';
 import axios from 'axios';
-import GlassCard from '../components/ui/GlassCard';
+import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { AuthContext } from '../context/AuthContext';
-import './Dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -67,7 +66,6 @@ const Dashboard = () => {
     formData.append("file", file);
 
     try {
-      // 1. Upload Resume
       const res = await axios.post(`${API_URL}/resume/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -76,8 +74,6 @@ const Dashboard = () => {
       });
       
       const resumeId = res.data.resume._id;
-      
-      // 2. Head to Results Page where analysis will happen
       navigate(`/results/${resumeId}`);
       
     } catch (err) {
@@ -87,15 +83,24 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard-container animate-slide-up">
-      <div className="dashboard-header">
-        <h1 className="dashboard-title">Analyze Your <span className="gradient-text">Resume</span></h1>
-        <p className="dashboard-subtitle">Upload your PDF resume to let our AI scan, review, and score your profile against modern ATS standards.</p>
+    <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8 mt-10">
+      <div className="text-center mb-12 space-y-4">
+        <h1 className="text-4xl md:text-5xl font-outfit font-bold tracking-tight text-white">
+          Analyze Your <span className="text-gradient">Resume</span>
+        </h1>
+        <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+          Upload your PDF resume to let our AI scan, review, and score your profile against modern ATS standards.
+        </p>
       </div>
 
-      <GlassCard className="upload-card">
+      <Card className="!p-8 sm:!p-12 relative overflow-hidden">
+        {/* Subtle background glow inside the card */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-64 bg-blue-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+
         <div 
-          className={`drop-zone ${dragActive ? 'active' : ''} ${file ? 'has-file' : ''}`}
+          className={`relative z-10 border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[360px] bg-slate-900/50 ${
+            dragActive ? 'border-blue-500 bg-blue-500/5 scale-[1.01]' : 'border-slate-700 hover:border-blue-400/50 hover:bg-slate-800/80'
+          } ${file ? 'border-solid border-blue-500/50 bg-blue-500/5' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -107,55 +112,58 @@ const Dashboard = () => {
             type="file" 
             accept="application/pdf"
             onChange={handleChange}
-            style={{ display: "none" }}
+            className="hidden"
           />
 
           {!file ? (
-            <div className="drop-content">
-              <div className="upload-icon-wrapper">
-                <UploadCloud size={48} className="upload-icon" />
+            <div className="flex flex-col items-center space-y-4 pointer-events-none">
+              <div className="bg-slate-800 p-4 rounded-full border border-slate-700 shadow-lg mb-2">
+                <UploadCloud size={40} className="text-blue-400" />
               </div>
-              <h3>Drag & drop your resume here</h3>
-              <p>or click to browse your files (PDF only)</p>
+              <h3 className="text-xl font-semibold text-white">Drag & drop your resume here</h3>
+              <p className="text-slate-400 text-sm">or click to browse your files (PDF only)</p>
             </div>
           ) : (
-            <div className="file-content">
-              <FileText size={48} className="file-icon gradient-text" />
-              <h3>{file.name}</h3>
-              <p>{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="bg-blue-500/10 p-4 rounded-full border border-blue-500/20 mb-2">
+                <FileText size={40} className="text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white">{file.name}</h3>
+              <p className="text-slate-400 text-sm">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
               
               <button 
-                className="remove-file-btn"
+                className="mt-4 flex items-center space-x-2 text-red-400 hover:text-red-300 text-sm font-medium transition-colors px-4 py-2 hover:bg-red-500/10 rounded-lg"
                 onClick={(e) => {
                   e.stopPropagation();
                   setFile(null);
                 }}
               >
-                <XCircle size={20} />
-                Remove file
+                <XCircle size={18} />
+                <span>Remove file</span>
               </button>
             </div>
           )}
         </div>
 
         {error && (
-          <div className="upload-error">
-            <XCircle size={18} />
-            {error}
+          <div className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start space-x-3 text-red-400">
+            <XCircle size={20} className="flex-shrink-0 mt-0.5" />
+            <p className="text-sm font-medium">{error}</p>
           </div>
         )}
 
-        <div className="upload-actions">
+        <div className="mt-8 flex justify-end">
           <Button 
-            className="analyze-btn" 
+            className="w-full sm:w-auto min-w-[200px]" 
+            size="lg"
             disabled={!file || loading} 
             isLoading={loading}
             onClick={handleUpload}
           >
-            {loading ? 'Uploading...' : 'Scan & Analyze'}
+            {loading ? 'Analyzing Profile...' : 'Scan & Analyze'}
           </Button>
         </div>
-      </GlassCard>
+      </Card>
     </div>
   );
 };
