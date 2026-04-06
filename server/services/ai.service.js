@@ -49,12 +49,12 @@ export const analyzeResume = async (resumeText) => {
       Analyze the following resume and return STRICT JSON:
 
       {
-        "score": number,
-        "strengths": [string],
-        "weaknesses": [string],
-        "improvements": [string],
-        "skills": [string],
-        "feedbackSummary": string
+        "score": number, // integer out of 100
+        "strengths": [string], // array of bullet points
+        "weaknesses": [string], // array of bullet points
+        "improvements": [string], // actionable roadmap steps
+        "skills": [string], // list of extracted skills
+        "feedbackSummary": string // cohesive 2-3 sentence overview
       }
 
       Resume:
@@ -88,6 +88,14 @@ export const analyzeResume = async (resumeText) => {
     }
 
     if (!parsed) throw new Error("Invalid AI response");
+
+    // Normalize AI score inconsistency
+    if (typeof parsed.score === 'number') {
+      let s = parsed.score;
+      if (s > 0 && s <= 1) s = s * 100; // e.g., 0.92 -> 92
+      else if (s > 1 && s <= 10) s = s * 10; // e.g., 8.2 -> 82
+      parsed.score = Math.max(0, Math.min(100, Math.round(s))); // clamp between 0-100
+    }
 
     return parsed;
   } catch (error) {
